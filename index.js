@@ -14,6 +14,7 @@ const app = express();
 const server = http.createServer(app);
 app.set("views", path.join(__dirname, "views"));
 
+
 const hbs = exphbs.create({
   defaultLayout: "main",
   layoutsDir: path.join(app.get("views"), "layouts"),
@@ -51,7 +52,24 @@ app.use(bodyParser.json());
 app.post("/login_form", async (req,res)=>{
     const {username, password} = req.body;
 
+    // query to mysql database to get username and password verification
+    const pool = mysql.createPool({
+      host: 'localhost',
+      user: 'root',
+      password: '',
+      database: 'testdb',
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+    });
+    
+    pool.query('SELECT * FROM users', (err, results) => {
+      if (err) throw err;
+      console.log(results);
+    });
+
     console.log(`Username: ${username} and Password: ${password}`);
+    res.redirect("/home");
 });
 
 
@@ -64,7 +82,7 @@ app.post("/register_form", async (req,res)=>{
 app.use(require("./routes"));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.set("port", process.env.PORT || 8090);
+app.set("port", process.env.PORT || 8092);
 
 server.listen(app.get("port"), () => {
   console.log("server on port", app.get("port"));
